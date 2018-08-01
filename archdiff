@@ -1,0 +1,134 @@
+#!/bin/bash
+
+#  archdiff -- compare difference between two file archives
+#  Copyright (C) 2018 edloaa <edloaa at gmail dot com>
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+usage() {
+    echo "archdiff -- compare difference between two file archives"
+    echo "Usage: $0 {hash|compare} [arg1] [arg2]"
+    echo
+    echo "MODES:"
+    echo " hash [arg1]"
+    echo "   - generate hash index for [arg1]"
+    echo "     * [arg1] : directory"
+    echo "     * [arg2] : n.a."
+    echo
+    echo " compare [arg1] [arg2]"
+    echo "   - compare file differences"
+    echo "     * [arg1] : file index of archive 1"
+    echo "     * [arg2] : file index of archive 2"
+    echo
+    echo "General procedure (example):"
+    echo " 1. archdiff hash \"archive_1\""
+    echo " 2. archdiff hash \"archive_2\""
+    echo " 3. archdiff compare \"archive_1.md5\" \"archive_2.md5\" >diff.txt"
+    exit 0
+}
+
+case "$1" in
+
+    hash) # HASH MODE
+        date_and_time=$(date +%F_%H%M)
+        target_dir="$2"
+
+        if [[ -d "$target_dir" ]]; then
+            hash_index_file="$(basename ${target_dir})_${date_and_time}.md5"
+
+            echo -n "Generating hash index for: \"$target_dir\"... "
+            find "$target_dir" -type f -exec md5sum {} > "./$hash_index_file" \;
+
+            if [[ $? -eq 0 ]]; then
+                echo "Done!"
+                echo "Index name: \"$hash_index_file\""
+            else
+                echo "Error!"
+                exit 1
+            fi
+        else
+            echo "Error: \"$target_dir\" is not a valid directory."
+            exit 1
+        fi
+        ;;
+
+    compare) # COMPARE MODE
+
+        # Check if files from an archive 1 (src_archive_idx) exist in an
+        # archive 2 (dest_archive_idx). The script requires that all files from
+        # archive 1 and 2 have been hashed according to the following format:
+
+        # HASH                             FILE PATH
+        # ------------------------------------------------
+        # c2ba4aa3a15c8406abfb6c99957c409c /path/to/file_a
+        # 9443a3e650b50b3a49fc77f9a5917b5b /path/to/file_b
+        # ...
+        # ------------------------------------------------
+
+        src_archive_idx="$2"
+        dest_archive_idx="$3"
+
+        F_archive_indices_ok=0
+
+        if [[ ! -r "$src_archive_idx" ]]; then
+            F_archive_indices_ok=1
+            echo "Error: Cannot read \"$src_archive_idx\""
+        fi
+
+        if [[ ! -r "$dest_archive_idx" ]]; then
+            F_archive_indices_ok=1
+            echo "Error: Cannot read \"$dest_archive_idx\""
+        fi
+
+        [[ $F_archive_indices_ok -ne 0 ]] && exit 1
+
+        echo "number of entries in source index:      $(wc -l ${src_archive_idx})"
+        echo "number of entries in destination index: $(wc -l ${dest_archive_idx})"
+        echo
+
+        # EXPLANATION OF READ LOOP
+        #  * IFS='' (or IFS=) prevents leading/trailing whitespace from being trimmed
+        #  * -r prevents backslash escapes from being interpreted
+        #  * [[ -n $line ]] prevents last line from being ignored if it doesn't
+        #    end with a \n (since read returns a non-zero exit code when it encounters EOF)
+
+        while IFS='' read -r LINE || [[ -n $LINE ]]
+        do
+            # Skip if line is empty
+            [[ ${LINE} == "" ]] && continue
+
+            HASH=$(echo ${LINE} | awk '{print $1}')
+            found_copies=$(grep $HASH ${dest_archive_idx} | awk '{print $2}')
+            number_of_copies_found=$(echo "$found_copies" | wc -l)
+
+            if [[ "$found_copies" = "" ]]; then
+                echo "NOT FOUND: ${LINE}"
+            else
+                printf "FOUND (%1.f): %s " $number_of_copies_found "${LINE}"
+                echo    "--> $(echo "$found_copies" | tr '\n' '|' | sed 's/|$//')"
+            fi
+        done <${src_archive_idx}
+        ;;
+
+    help) usage ;;
+
+    *)
+        echo "Error: \"$1\" is not a valid mode."
+        echo "Run '$0 help' for help."
+        exit 1
+        ;;
+esac
+
+exit 0
+
