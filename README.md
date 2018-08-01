@@ -4,7 +4,7 @@
 
 ### Scenario
 
-Consider having two archives (`archive_1` and `archive_2`). Their folder structure and files are indicated below. The hashes of the files are given in parenthesis.
+Consider having two archives (`archive_1` and `archive_2`). Their folder structures and files are indicated below. The hashes of the files are given in parenthesis.
 
 ```
 archive_1
