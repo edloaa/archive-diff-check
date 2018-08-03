@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#                    __        ___ ________
+#   ____ ___________/ /_  ____/ (_) __/ __/
+#  / __ `/ ___/ ___/ __ \/ __  / / /_/ /_
+# / /_/ / /  / /__/ / / / /_/ / / __/ __/
+# \__,_/_/   \___/_/ /_/\__,_/_/_/ /_/
+
+#------------------------------------------------------------------------
 #  archdiff -- compare difference between two file archives
 #  Copyright (C) 2018 edloaa <edloaa at gmail dot com>
 #
@@ -15,27 +22,35 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#------------------------------------------------------------------------
 
+# display help
 usage() {
-    echo "archdiff -- compare difference between two file archives"
-    echo "Usage: $0 {hash|compare} [arg1] [arg2]"
-    echo
-    echo "MODES:"
-    echo " hash [arg1]"
-    echo "   - generate hash index for [arg1]"
-    echo "     * [arg1] : directory"
-    echo "     * [arg2] : n.a."
-    echo
-    echo " compare [arg1] [arg2]"
-    echo "   - compare file differences"
-    echo "     * [arg1] : file index of archive 1"
-    echo "     * [arg2] : file index of archive 2"
-    echo
-    echo "General procedure (example):"
-    echo " 1. archdiff hash \"archive_1\""
-    echo " 2. archdiff hash \"archive_2\""
-    echo " 3. archdiff compare \"archive_1.md5\" \"archive_2.md5\" >diff.txt"
-    exit 0
+cat << EOF
+archdiff -- compare difference between two file archives
+
+USAGE:
+
+    $0 {hash|compare} [arg1] [arg2]
+
+MODES:
+
+  hash [arg1]
+    - generate hash index for [arg1]
+      * [arg1] : directory
+      * [arg2] : n.a.
+
+  compare [arg1] [arg2]
+    - compare file differences
+      * [arg1] : file index of archive 1
+      * [arg2] : file index of archive 2
+
+General procedure (example):
+ 1. archdiff hash "archive_1"
+ 2. archdiff hash "archive_2"
+ 3. archdiff compare "archive_1.md5" "archive_2.md5" >diff.txt"
+EOF
+exit 0
 }
 
 case "$1" in

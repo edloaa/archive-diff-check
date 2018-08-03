@@ -71,7 +71,7 @@ Run `archdiff help` for more information.
 
 ### License
 
-**Disclaimer:** This script was written for my personal use when I had to compare several large archives containing lot of pictures and other data. Use or reuse at you own risk.
+**Disclaimer:** This script was written for my personal use when I had to compare several large archives containing lots of pictures and other data. Use or reuse at you own risk.
 
 **License:** GPL-3.0-or-later
 
